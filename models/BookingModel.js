@@ -29,6 +29,10 @@ const bookingSchema = new Schema ({
     startMonth: {
         type: String,
     },
+    totalMonths: {
+        type: Number,
+        default: 1
+    },
     endMonth: {
         type: String,
     },
@@ -73,11 +77,13 @@ const bookingSchema = new Schema ({
         type: Types.ObjectId,
         ref: "User",
     },
-
-   
     garages: {
         type:Number,
         default:1
+    },
+    payStatus: {
+        type:String,
+        default:'unpaid'
     }
 },{timestamps:true})
 

@@ -2,6 +2,8 @@ const User = require("../models/UserModel");
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require("../services/secretEnv");
+const House = require("../models/HouseModel");
+const Booking = require("../models/BookingModel");
 
 const registerUser = async (req, res) => {
     const body = req.body;
@@ -41,7 +43,7 @@ const loginUser = async (req, res) => {
 
         delete user?.password;
         const token = jwt.sign({ id: user?._id, email: user?.email }, jwtSecret, {expiresIn:'1d'});
-        console.log(token);
+
         res.cookie("token", token, {
             httpOnly: true,
             secure: true,
@@ -162,7 +164,42 @@ const logOutUser = async (req, res)=> {
         })
         .send({ success: true })
     } catch (error) {
-        
+        res.status(500).send({
+            success:false,
+            message: error.message,
+        })
+    }
+}
+
+const getOwnerAnalitics = async (req, res) => {
+    const userId = req.params?.userId;
+    const tokenId = req.user?.id;
+    if(userId !== tokenId){
+        res.send({
+            message: "Invalid request",
+            success:false,
+        })
+    }
+
+    try {
+        const houseQuery = {
+            owner: userId,
+        }
+        const bookingQuery= {
+            houseOwner: userId,
+            payStatus : 'paid'
+        }
+        const totlehouse = await House.find(houseQuery).countDocuments();
+        const totalOrders = await Booking.find(bookingQuery).countDocuments(); 
+        res.send({
+            totlehouse,
+            totalOrders
+        })
+    } catch (error) {
+        res.status(500).send({
+            success:false,
+            message: error.message,
+        })
     }
 }
 
@@ -173,5 +210,6 @@ module.exports = {
     findUsreById,
     findAuthUser,
     logOutUser,
-    updateUser
+    updateUser,
+    getOwnerAnalitics
 }

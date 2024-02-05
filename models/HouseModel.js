@@ -65,6 +65,9 @@ const houseSchema = new Schema ({
     garages: {
         type:Number,
         default:1
+    },
+    bookedDate: {
+        type:String,
     }
 },{timestamps:true})
 

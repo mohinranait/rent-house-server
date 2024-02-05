@@ -1,4 +1,5 @@
 const Booking = require("../models/BookingModel");
+const House = require("../models/HouseModel");
 
 const newBookingMethod = async (req, res) => {
     const body = req.body;
@@ -20,6 +21,53 @@ const newBookingMethod = async (req, res) => {
             })
         }
         const booking= await Booking.create(body);
+        res.send({
+            success:true,
+            message:"Created"
+        })
+    } catch (error) {
+        res.send({
+            success:false,
+            message: error.message
+        })
+    }
+}
+
+// udpate bookings
+const updateBookings = async (req, res) => {
+    const body = req.body;
+    const {findHouseId} = req.body;
+
+    const id = req.params?.id;
+    const request = req.query?.request;
+
+    const userId = req.query?.userId;
+    const tokenId = req.user?.id;
+
+
+    if(request == 'user'){
+        if(userId !== tokenId){
+            return res.send({
+                message: "forbidden access"
+            })
+        }
+    }
+   
+
+    try {
+        const {  endMonth } = await Booking.findByIdAndUpdate(id, req.body, {
+            new:true,
+            runValidators:true
+        })
+
+
+        await House.findByIdAndUpdate({_id: findHouseId}, {
+            bookedDate : endMonth,
+        },{
+            new:true,
+            runValidators:true,
+        })
+
         res.send({
             success:true,
             message:"Created"
@@ -74,6 +122,7 @@ const ownerBookingsMethod = async ( req, res) => {
     try {
         const query = {
             houseOwner : userId,
+            payStatus: 'paid'
         }
         const bookings = await Booking.find(query).populate('user');
         res.send({
@@ -146,5 +195,6 @@ module.exports = {
     rentalBookingMethod,
     ownerBookingsMethod,
     existsBooking,
-    deleteBooking
+    deleteBooking,
+    updateBookings
 }
